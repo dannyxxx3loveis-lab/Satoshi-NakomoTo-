@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#090b14">
+<title>Star Crash</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--bg:#090b14;--panel:#121625;--panel2:#191e30;--border:#272d43;--text:#f5f6ff;--muted:#8991aa;--purple:#9564ff;--purple2:#633bdf;--gold:#ffd76b;--green:#35e4a0;--red:#ff5878}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Arial,sans-serif;font-size:14px;min-height:100vh}
+button,input{font:inherit}
+button{cursor:pointer;color:inherit;border:0}
+button:disabled{opacity:.45;cursor:not-allowed}
+.app{width:100%;max-width:470px;min-height:100vh;margin:auto;padding:18px 15px 100px;background:radial-gradient(ellipse at 50% -15%,#282052 0,transparent 48%)}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.logo-wrap{display:flex;align-items:center;gap:10px}
+.logo{width:43px;height:43px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(145deg,#a67aff,#6037d5);font-size:23px;box-shadow:0 5px 25px #8055ff35}
+.logo-title{font-size:18px;font-weight:900;letter-spacing:1.1px}
+.logo-sub{font-size:10px;color:var(--muted);margin-top:4px;letter-spacing:2px}
+.balance{display:flex;align-items:center;gap:8px;background:#171b2b;border:1px solid #35304e;padding:7px 8px 7px 12px;border-radius:15px}
+.balance-number{font-size:15px;font-weight:900}
+.star{color:var(--gold)}
+.add-balance{width:31px;height:31px;border-radius:10px;background:linear-gradient(135deg,#a27aff,#7044e7);font-size:23px;line-height:1}
+.welcome{margin:4px 0 19px}
+.eyebrow{color:#ad91ff;text-transform:uppercase;font-size:10px;letter-spacing:2px;font-weight:800}
+.welcome h1{font-size:27px;margin:8px 0 7px;letter-spacing:-.8px}
+.welcome p{margin:0;color:var(--muted);font-size:13px;line-height:1.6}
+.game-card{position:relative;overflow:hidden;border-radius:23px;padding:16px;background:linear-gradient(155deg,#1b1936,#111626 65%);border:1px solid #34304f;box-shadow:0 12px 35px #0003}
+.game-heading{display:flex;align-items:center;justify-content:space-between}
+.game-name{font-size:16px;font-weight:900}
+.live{font-size:10px;color:var(--green);display:flex;align-items:center;gap:6px;background:#16362e;padding:7px 10px;border-radius:20px}
+.live:before{content:"";width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 9px var(--green)}
+.game-stage{height:255px;margin-top:14px;position:relative;overflow:hidden;border-radius:17px;background:radial-gradient(ellipse at 48% 100%,#30215d 0,#17152d 42%,#0d1120 85%)}
+.game-stage:before{content:"";position:absolute;inset:0;background-image:linear-gradient(#b39bff0c 1px,transparent 1px),linear-gradient(90deg,#b39bff0c 1px,transparent 1px);background-size:31px 31px;mask-image:linear-gradient(transparent,#000)}
+#chart{position:absolute;inset:0;width:100%;height:100%}
+.multiplier{position:absolute;top:37%;left:0;width:100%;text-align:center;font-size:47px;font-weight:900;letter-spacing:-2px;text-shadow:0 0 30px #9a66ff70}
+.stage-status{position:absolute;top:60%;width:100%;text-align:center;color:#a8aec6;font-size:12px}
+.rocket{position:absolute;top:18px;right:20px;font-size:33px;filter:drop-shadow(0 0 12px #b78aff);transform:rotate(-12deg)}
+.stage-bottom{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;font-size:10px;color:#9ba2bc}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:13px}
+.stat{background:#ffffff06;border:1px solid #ffffff0c;padding:12px;border-radius:13px}
+.stat-label{font-size:10px;color:var(--muted);margin-bottom:7px}
+.stat-value{font-size:17px;font-weight:900}
+.section{margin-top:17px;background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:16px}
+.section-heading{display:flex;align-items:center;justify-content:space-between;margin:0 0 16px}
+.section-heading h2{font-size:16px;margin:0;font-weight:900}
+.section-heading span{font-size:11px;color:var(--muted)}
+.mode-switch{display:grid;grid-template-columns:1fr 1fr;gap:7px;background:#0c0f1b;padding:5px;border-radius:13px;margin-bottom:17px}
+.mode-switch button{background:transparent;color:var(--muted);padding:11px 5px;border-radius:9px;font-size:12px;font-weight:800}
+.mode-switch button.active{background:#30234f;color:#e6dcff;box-shadow:inset 0 0 0 1px #5f478c}
+.field-label{font-size:11px;color:var(--muted);margin-bottom:9px}
+.amount-row{display:flex;gap:8px;margin-bottom:10px}
+.step-btn{width:45px;flex-shrink:0;border-radius:11px;background:var(--panel2);font-size:22px}
+.field{width:100%;min-width:0;border:1px solid var(--border);border-radius:11px;background:#0b0e19;color:white;text-align:center;padding:13px;font-size:16px;font-weight:800;outline:none}
+.field:focus,.text-field:focus{border-color:var(--purple)}
+.quick-amounts{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:17px}
+.quick-amounts button{padding:10px 3px;border-radius:9px;background:#20253a;color:#c4c9dd;font-size:11px;font-weight:800}
+.quick-amounts button:active{background:#42306c}
+.primary{width:100%;padding:15px;border-radius:13px;background:linear-gradient(100deg,#9a6bff,#7043e6);font-size:13px;font-weight:900;box-shadow:0 7px 18px #7448e62c}
+.primary:active{transform:scale(.99)}
+.secondary{width:100%;padding:14px;border-radius:12px;background:#252a40;font-size:12px;font-weight:800;margin-top:9px}
+.cashout{background:linear-gradient(100deg,#20bd83,#148c66)}
+.note{font-size:10px;line-height:1.6;color:var(--muted);margin-top:12px}
+.message{font-size:12px;line-height:1.5;margin-top:10px;color:var(--green);overflow-wrap:anywhere}
+.page{display:none}
+.page.active{display:block}
+.menu-title{margin:23px 0 12px;font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:1.2px}
+.game-tile{width:100%;text-align:left;display:flex;align-items:center;gap:13px;padding:13px;border-radius:17px;background:linear-gradient(110deg,#211a3b,#171b2b);border:1px solid #393050}
+.tile-icon{width:51px;height:51px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#9565ff,#4e31bd);font-size:27px}
+.tile-copy{flex:1}
+.tile-title{font-weight:900;font-size:14px}
+.tile-desc{color:var(--muted);font-size:11px;margin-top:5px}
+.tile-arrow{font-size:21px;color:#a58aff}
+.info-strip{display:flex;align-items:center;gap:11px;padding:14px;border:1px solid var(--border);background:#121625;border-radius:15px;margin-top:12px}
+.info-icon{font-size:21px}
+.info-copy{font-size:11px;color:var(--muted);line-height:1.5}
+.info-copy strong{display:block;color:var(--text);font-size:12px;margin-bottom:3px}
+.text-field{width:100%;background:#0b0e19;border:1px solid var(--border);border-radius:11px;padding:13px;color:white;outline:none;margin:8px 0 15px}
+.history-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--border);font-size:12px}
+.history-row:last-child{border-bottom:0}
+.pill{padding:6px 8px;border-radius:8px;background:#20253a;color:#c2c7d9;font-size:10px}
+.bottom-nav{position:fixed;z-index:5;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:470px;display:grid;grid-template-columns:repeat(4,1fr);gap:3px;padding:9px 10px calc(9px + env(safe-area-inset-bottom));background:#0d101bed;backdrop-filter:blur(20px);border-top:1px solid #292d40}
+.bottom-nav button{display:flex;flex-direction:column;align-items:center;gap:5px;padding:7px 0;background:transparent;color:#747d97;font-size:9px;font-weight:700}
+.bottom-nav button .nav-icon{font-size:19px}
+.bottom-nav button.active{color:#b49aff}
+.empty{text-align:center;padding:20px 0;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="logo-wrap">
+<div class="logo">🚀</div>
+<div><div class="logo-title">STAR CRASH</div><div class="logo-sub">PLAY • WIN • STARS</div></div>
+</div>
+<div class="balance"><span class="star">★</span><span id="balance" class="balance-number">10</span><button class="add-balance" id="quickDeposit">+</button></div>
+</header>
+
+<main>
+<section id="homePage" class="page active">
+<div class="welcome">
+<div class="eyebrow">Добро пожаловать</div>
+<h1>Пора взлетать 🚀</h1>
+<p>Следи за множителем и забирай выигрыш до того, как ракета исчезнет.</p>
+</div>
+
+<button class="game-tile" id="openGame">
+<div class="tile-icon">🚀</div>
+<div class="tile-copy"><div class="tile-title">Star Crash</div><div class="tile-desc">Одна игра. Твой выбор. Твой множитель.</div></div>
+<div class="tile-arrow">›</div>
+</button>
+
+<div class="menu-title">Твой аккаунт</div>
+<div class="stats">
+<div class="stat"><div class="stat-label">Баланс</div><div class="stat-value"><span id="homeBalance">10</span> <span class="star">★</span></div></div>
+<div class="stat"><div class="stat-label">Доступно к выводу</div><div class="stat-value"><span id="homeAvailable">0</span> <span class="star">★</span></div></div>
+</div>
+
+<div class="info-strip"><div class="info-icon">💎</div><div class="info-copy"><strong>Пополняй баланс</strong>Покупай звёзды через встроенную оплату Telegram.</div></div>
+<div class="info-strip"><div class="info-icon">🏆</div><div class="info-copy"><strong>Выполняй условия отыгрыша</strong>Пополненные звёзды нельзя сразу вывести.</div></div>
+</section>
+
+<section id="gamePage" class="page">
+<div class="section-heading" style="margin:7px 0 13px"><h2>🚀 Star Crash</h2><span class="pill" id="round">Ожидание</span></div>
+<div class="game-card">
+<div class="game-heading"><div class="game-name">Космический полёт</div><div class="live" id="liveStatus">LIVE</div></div>
+<div class="game-stage">
+<canvas id="chart"></canvas>
+<div class="rocket" id="rocket">🚀</div>
+<div class="multiplier" id="multiplier">1.00x</div>
+<div class="stage-status" id="stageStatus">Готов к запуску</div>
+<div class="stage-bottom"><span>STAR CRASH</span><span id="stageRound">ROUND #1</span></div>
+</div>
+<div class="stats">
+<div class="stat"><div class="stat-label">Твоя ставка</div><div class="stat-value"><span id="currentBet">0</span> <span class="star">★</span></div></div>
+<div class="stat"><div class="stat-label">Возможный выигрыш</div><div class="stat-value"><span id="potential">0</span> <span class="star">★</span></div></div>
+</div>
+</div>
+
+<div class="section">
+<div class="section-heading"><h2>Твоя ставка</h2><span>Валюта ⭐</span></div>
+<div class="mode-switch"><button id="manualMode" class="active">Ручной вывод</button><button id="autoMode">Автовывод</button></div>
+<div class="field-label">Сумма ставки</div>
+<div class="amount-row"><button class="step-btn" id="betMinus">−</button><input class="field" id="bet" type="number" min="1" step="1" value="1"><button class="step-btn" id="betPlus">+</button></div>
+<div class="quick-amounts"><button data-bet="1">1 ★</button><button data-bet="5">5 ★</button><button data-bet="10">10 ★</button><button data-bet="25">25 ★</button></div>
+<div class="field-label">Целевой множитель автовывода</div>
+<div class="amount-row"><button class="step-btn" id="targetMinus">−</button><input class="field" id="target" type="number" min="1.1" step=".1" value="2.0"><button class="step-btn" id="targetPlus">+</button></div>
+<button class="primary" id="play">ПОСТАВИТЬ 1 ★</button>
+<button class="primary cashout" id="cashout" style="display:none">ЗАБРАТЬ ВЫИГРЫШ</button>
+<div class="message" id="gameMessage"></div>
+<div class="note">Игровые раунды должны рассчитываться сервером. Не обновляй страницу во время активной ставки.</div>
+</div>
+
+<div class="section">
+<div class="section-heading"><h2>Последние раунды</h2><span>История</span></div>
+<div id="history" class="empty">Пока нет завершённых раундов</div>
+</div>
+</section>
+
+<section id="depositPage" class="page">
+<div class="welcome"><div class="eyebrow">Твой кошелёк</div><h1>Пополнение ⭐</h1><p>Оплати звёзды безопасно через Telegram.</p></div>
+<div class="section">
+<div class="section-heading"><h2>Создать счёт</h2><span class="star">★ Stars</span></div>
+<div class="field-label">Сумма пополнения</div>
+<div class="amount-row"><button class="step-btn" id="depositMinus">−</button><input class="field" id="depositAmount" type="number" min="1" step="1" value="100"><button class="step-btn" id="depositPlus">+</button></div>
+<div class="quick-amounts"><button data-deposit="10">10 ★</button><button data-deposit="50">50 ★</button><button data-deposit="100">100 ★</button><button data-deposit="500">500 ★</button></div>
+<button class="primary" id="depositButton">СОЗДАТЬ СЧЁТ НА ОПЛАТУ</button>
+<div class="message" id="depositMessage"></div>
+<div class="note">Баланс пополнится только после подтверждения успешной оплаты сервером Telegram.</div>
+</div>
+</section>
+
+<section id="withdrawPage" class="page">
+<div class="welcome"><div class="eyebrow">Твои выигрыши</div><h1>Вывод звёзд</h1><p>Подай заявку администратору на ручную выплату.</p></div>
+<div class="stats">
+<div class="stat"><div class="stat-label">Доступно к выводу</div><div class="stat-value"><span id="withdrawAvailable">0</span> <span class="star">★</span></div></div>
+<div class="stat"><div class="stat-label">Осталось отыграть</div><div class="stat-value"><span id="rollover">0</span> <span class="star">★</span></div></div>
+</div>
+<div class="section">
+<div class="section-heading"><h2>Новая заявка</h2><span class="pill">от 100 ★</span></div>
+<div class="field-label">Сумма вывода</div>
+<input class="text-field" id="withdrawAmount" type="number" min="100" step="1" value="100">
+<div class="field-label">Реквизиты для выплаты</div>
+<input class="text-field" id="withdrawDetails" type="text" maxlength="200" placeholder="Укажи реквизиты для выплаты">
+<button class="primary" id="withdrawButton">ОТПРАВИТЬ ЗАЯВКУ</button>
+<div class="message" id="withdrawMessage"></div>
+<div class="note">Минимум 100 ⭐. Пополнения не доступны к выводу, пока не отыграны согласно правилам. Заявку проверяет администратор; автоматическая выплата не выполняется.</div>
+</div>
+<div class="section">
+<div class="section-heading"><h2>Мои заявки</h2></div>
+<div id="requests" class="empty">Заявок пока нет</div>
+</div>
+</section>
+
+<section id="profilePage" class="page">
+<div class="welcome"><div class="eyebrow">Аккаунт</div><h1>Мой профиль</h1><p>Твой баланс и игровая информация.</p></div>
+<div class="section">
+<div class="section-heading"><h2>Информация</h2><span>Telegram</span></div>
+<div class="history-row"><span>Пользователь</span><strong id="username">Игрок</strong></div>
+<div class="history-row"><span>Общий баланс</span><strong><span id="profileBalance">10</span> ★</strong></div>
+<div class="history-row"><span>Доступно к выводу</span><strong><span id="profileAvailable">0</span> ★</strong></div>
+<div class="history-row"><span>Остаток отыгрыша</span><strong><span id="profileRollover">0</span> ★</strong></div>
+<button class="secondary" id="profileDeposit">＋ Пополнить баланс</button>
+</div>
+</section>
+</main>
+</div>
+
+<nav class="bottom-nav">
+<button class="active" data-page="homePage"><span class="nav-icon">⌂</span>Главная</button>
+<button data-page="gamePage"><span class="nav-icon">🚀</span>Игра</button>
+<button data-page="depositPage"><span class="nav-icon">＋</span>Пополнение</button>
+<button data-page="profilePage"><span class="nav-icon">◉</span>Профиль</button>
+</nav>
+
+<script>
+const tg=window.Telegram?.WebApp;
+tg?.ready();
+tg?.expand();
+tg?.setHeaderColor?.("#090b14");
+tg?.setBackgroundColor?.("#090b14");
+const $=id=>document.getElementById(id);
+const state={balance:10,available:0,rollover:0,activeBet:0,round:0,running:false,cashed:false,mode:"manual",history:[],requests:[]};
+let curve=[],startedAt=0,animation=null,roundTimer=null;
+const canvas=$("chart"),ctx=canvas.getContext("2d");
+function api(path,options={}){return fetch(path,{...options,headers:{"Content-Type":"application/json","X-Telegram-Init-Data":tg?.initData||"",...(options.headers||{})}}).then(async r=>{const d=await r.json().catch(()=>({}));if(!r.ok)throw Error(d.detail||d.error||"Не удалось выполнить запрос");return d})}
+function notify(id,text,error=false){$(id).textContent=text;$(id).style.color=error?"var(--red)":"var(--green)"}
+function number(id){return Number($(id).value)||0}
+function showPage(id){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id===id));document.querySelectorAll(".bottom-nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));if(id==="withdrawPage")loadRequests();if(id==="profilePage")syncAccount();if(id==="gamePage")resizeCanvas();window.scrollTo({top:0,behavior:"smooth"})}
+document.querySelectorAll("[data-page]").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+$("openGame").onclick=()=>showPage("gamePage");
+$("quickDeposit").onclick=()=>showPage("depositPage");
+$("profileDeposit").onclick=()=>showPage("depositPage");
+function render(){const b=Math.max(0,Number(state.balance)||0);$("balance").textContent=b;$("homeBalance").textContent=b;$("profileBalance").textContent=b;$("homeAvailable").textContent=state.available;$("withdrawAvailable").textContent=state.available;$("profileAvailable").textContent=state.available;$("rollover").textContent=state.rollover;$("profileRollover").textContent=state.rollover;$("currentBet").textContent=state.activeBet;$("potential").textContent=state.activeBet?Math.floor(state.activeBet*currentMultiplier()):0;$("play").textContent=state.activeBet?"СТАВКА ПРИНЯТА":"ПОСТАВИТЬ "+number("bet")+" ★";$("play").disabled=state.running||!!state.activeBet||number("bet")<1||number("bet")>state.balance;$("cashout").style.display=state.activeBet&&state.running&&!state.cashed?"block":"none"}
+function currentMultiplier(){return Number($("multiplier").textContent.replace("x",""))||1}
+function updateBet(){render()}
+$("bet").oninput=updateBet;
+$("target").oninput=render;
+$("betMinus").onclick=()=>{$("bet").value=Math.max(1,number("bet")-1);render()};
+$("betPlus").onclick=()=>{$("bet").value=number("bet")+1;render()};
+$("targetMinus").onclick=()=>{$("target").value=Math.max(1.1,number("target")-.1).toFixed(1);render()};
+$("targetPlus").onclick=()=>{$("target").value=(number("target")+.1).toFixed(1);render()};
+document.querySelectorAll("[data-bet]").forEach(b=>b.onclick=()=>{$("bet").value=b.dataset.bet;render()});
+document.querySelectorAll("[data-deposit]").forEach(b=>b.onclick=()=>{$("depositAmount").value=b.dataset.deposit});
+$("depositMinus").onclick=()=>{$("depositAmount").value=Math.max(1,number("depositAmount")-10)};
+$("depositPlus").onclick=()=>{$("depositAmount").value=number("depositAmount")+10};
+$("manualMode").onclick=()=>{state.mode="manual";$("manualMode").classList.add("active");$("autoMode").classList.remove("active")};
+$("autoMode").onclick=()=>{state.mode="auto";$("autoMode").classList.add("active");$("manualMode").classList.remove("active")};
+function resizeCanvas(){const r=canvas.getBoundingClientRect();if(!r.width||!r.height)return;canvas.width=Math.round(r.width*devicePixelRatio);canvas.height=Math.round(r.height*devicePixelRatio);draw()}
+function draw(){const w=canvas.width,h=canvas.height;if(!w||!h)return;ctx.clearRect(0,0,w,h);ctx.strokeStyle="rgba(180,160,255,.09)";ctx.lineWidth=devicePixelRatio;for(let x=0;x<w;x+=34*devicePixelRatio){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke()}for(let y=0;y<h;y+=34*devicePixelRatio){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke()}if(curve.length<2)return;ctx.beginPath();curve.forEach((p,i)=>{const x=p.x*w,y=h-p.y*h;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});ctx.lineWidth=3*devicePixelRatio;ctx.strokeStyle="#a57aff";ctx.shadowColor="#9564ff";ctx.shadowBlur=15*devicePixelRatio;ctx.stroke();ctx.shadowBlur=0;const p=curve[curve.length-1];ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(p.x*w,h-p.y*h,4*devicePixelRatio,0,Math.PI*2);ctx.fill()}
+function startRound(){if(state.running)return;state.round++;state.running=true;state.cashed=false;startedAt=performance.now();curve=[];$("round").textContent="РАУНД #"+state.round;$("stageRound").textContent="ROUND #"+state.round;$("stageStatus").textContent="Ракета взлетает";$("liveStatus").textContent="LIVE";$("multiplier").style.color="white";$("rocket").style.transform="rotate(-12deg)";render();function frame(now){if(!state.running)return;const elapsed=(now-startedAt)/1000;const mult=Math.exp(elapsed*.24);curve.push({x:Math.min(.96,elapsed/10),y:Math.min(.9,.08+Math.log(mult)*.32)});draw();$("multiplier").textContent=mult.toFixed(2)+"x";$("rocket").style.top=Math.max(8,Math.min(155,150-elapsed*12))+"px";if(state.activeBet&&state.mode==="auto"&&!state.cashed&&mult>=number("target"))cashout();if(mult>=2.5+Math.random()*0.002){state.running=false;$("stageStatus").textContent="Раунд завершён";$("liveStatus").textContent="WAIT";$("multiplier").style.color="var(--red)";if(state.activeBet&&!state.cashed){state.activeBet=0;notify("gameMessage","Ставка проиграна",true)}addHistory({round:state.round,crash:mult});render();roundTimer=setTimeout(startRound,3500);return}animation=requestAnimationFrame(frame)}animation=requestAnimationFrame(frame)}
+function addHistory(item){state.history.unshift(item);state.history=state.history.slice(0,8);$("history").className="";$("history").innerHTML=state.history.map(v=>`<div class="history-row"><span>Раунд #${v.round}</span><strong style="color:${v.crash>=2?"var(--green)":"var(--red)"}">${v.crash.toFixed(2)}x</strong></div>`).join("")}
+async function syncAccount(){try{const d=await api("/api/me");state.balance=Number(d.balance??state.balance);state.available=Number(d.available_to_withdraw??d.available??state.available);state.rollover=Number(d.rollover_remaining??d.rollover??state.rollover);if(d.username)$("username").textContent=d.username;render()}catch(e){render()}}
+async function loadRequests(){await syncAccount();try{const d=await api("/api/withdrawals");state.requests=d.requests||[];$("requests").className=state.requests.length?"":"empty";$("requests").innerHTML=state.requests.length?state.requests.map(r=>`<div class="history-row"><span>${r.amount} ★ <span class="pill">${r.status}</span></span><span>#${r.id}</span></div>`).join(""):"Заявок пока нет"}catch(e){$("requests").textContent="Не удалось загрузить заявки"}}
+$("play").onclick=async()=>{if(state.running||state.activeBet)return;const amount=number("bet");if(!Number.isInteger(amount)||amount<1||amount>state.balance)return notify("gameMessage","Проверь сумму ставки",true);try{const d=await api("/api/bet",{method:"POST",body:JSON.stringify({amount,target:number("target"),round:state.round+1})});state.balance=Number(d.balance??state.balance-amount);state.rollover=Number(d.rollover_remaining??state.rollover);state.activeBet=amount;state.cashed=false;notify("gameMessage","Ставка принята");if(!state.running)startRound();render()}catch(e){notify("gameMessage",e.message,true)}};
+async function cashout(){if(!state.activeBet||!state.running||state.cashed)return;state.cashed=true;try{const d=await api("/api/cashout",{method:"POST",body:JSON.stringify({amount:state.activeBet,multiplier:currentMultiplier(),round:state.round})});state.balance=Number(d.balance??state.balance);state.available=Number(d.available_to_withdraw??state.available);state.rollover=Number(d.rollover_remaining??state.rollover);state.activeBet=0;notify("gameMessage","Выигрыш зачислен: "+(d.won??"")+" ★");render()}catch(e){state.cashed=false;notify("gameMessage",e.message,true);render()}}
+$("cashout").onclick=cashout;
+$("depositButton").onclick=async()=>{const amount=number("depositAmount");if(!Number.isInteger(amount)||amount<1)return notify("depositMessage","Укажи корректную сумму",true);$("depositButton").disabled=true;try{const d=await api("/api/deposit",{method:"POST",body:JSON.stringify({amount})});if(!d.invoice_url)throw Error("Сервер не вернул ссылку на оплату");notify("depositMessage","Счёт создан. Заверши оплату в Telegram.");if(tg?.openInvoice)tg.openInvoice(d.invoice_url,()=>syncAccount());else tg?.openLink(d.invoice_url)}catch(e){notify("depositMessage",e.message,true)}finally{$("depositButton").disabled=false}};
+$("withdrawButton").onclick=async()=>{const amount=number("withdrawAmount"),details=$("withdrawDetails").value.trim();if(!Number.isInteger(amount)||amount<100)return notify("withdrawMessage","Минимальный вывод — 100 ★",true);if(!details)return notify("withdrawMessage","Укажи реквизиты",true);$("withdrawButton").disabled=true;try{const d=await api("/api/withdraw",{method:"POST",body:JSON.stringify({amount,details})});notify("withdrawMessage",d.message||"Заявка отправлена администратору");await loadRequests()}catch(e){notify("withdrawMessage",e.message,true)}finally{$("withdrawButton").disabled=false}};
+if(tg?.initDataUnsafe?.user){const u=tg.initDataUnsafe.user;$("username").textContent=u.username?"@"+u.username:u.first_name||"Игрок"}
+window.addEventListener("resize",resizeCanvas);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccount()});
+resizeCanvas();render();syncAccount();
+</script>
+</body>
+  </html>
